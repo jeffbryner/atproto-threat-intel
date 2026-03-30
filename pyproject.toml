@@ -1,0 +1,25 @@
+[project]
+name = "atproto-threat-intel"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Jeff Bryner", email = "jeff@jeffbryner.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "cryptography>=46.0.6",
+    "fastapi>=0.135.2",
+    "google-auth>=2.49.1",
+    "google-cloud-firestore>=2.26.0",
+    "google-cloud-kms>=3.12.0",
+    "google-cloud-pubsub>=2.36.0",
+    "httpx>=0.28.1",
+    "pydantic-settings>=2.13.1",
+    "uvicorn>=0.42.0",
+    "websockets>=16.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.9.13,<0.10.0"]
+build-backend = "uv_build"
