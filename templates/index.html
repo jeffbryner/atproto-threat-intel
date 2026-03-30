@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Threat-Intel Sponsorship</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --danger: #ef4444;
+            --success: #22c55e;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 2rem;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        .badge {
+            background: var(--accent);
+            color: var(--bg-color);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--accent);
+            color: var(--bg-color);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--text-secondary);
+            color: var(--text-secondary);
+        }
+
+        .key-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .key-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #334155;
+        }
+
+        .key-item:last-child {
+            border-bottom: none;
+        }
+
+        .key-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .key-hash {
+            font-family: monospace;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .key-desc {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .key-scope {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .modal {
+            background: rgba(0, 0, 0, 0.8);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 16px;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .raw-key-box {
+            background: #000;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: monospace;
+            color: var(--success);
+            margin: 1.5rem 0;
+            word-break: break-all;
+            font-size: 1.1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        input,
+        select {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+            padding: 0.75rem;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <h1>Slack <span style="color:var(--accent)">Intel</span> Firehose</h1>
+                <p style="color: var(--text-secondary); margin: 0.25rem 0 0 0; font-size: 0.875rem;">POC Sponsorship
+                    Gateway</p>
+            </div>
+            {% if user %}
+            <div style="text-align: right;">
+                <div style="font-weight: 600;">{{ user.name }}</div>
+                <a href="/v1/auth/logout"
+                    style="color: var(--danger); font-size: 0.75rem; text-decoration: none;">Logout</a>
+            </div>
+            {% else %}
+            <a href="/v1/auth/login" class="btn">Login with Slack</a>
+            {% endif %}
+        </header>
+
+        {% if user %}
+        {% if request.session.new_key %}
+        <div class="modal">
+            <div class="modal-content">
+                <h2 style="margin-top:0">🔑 New Machine Key Generated</h2>
+                <p style="color: var(--text-secondary)">Copy this key now. It will <strong>never</strong> be shown
+                    again.</p>
+                <div class="raw-key-box">{{ request.session.pop('new_key', None) }}</div>
+                <button class="btn" onclick="this.closest('.modal').remove()">Done, I've saved it</button>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <h2 style="margin-top:0; font-size: 1.25rem;">Generate New Sponsorship</h2>
+            <form action="/v1/keys" method="post">
+                <div class="form-group">
+                    <label for="description">Machine Name / Description</label>
+                    <input type="text" name="description" id="description" placeholder="e.g. Production SIEM" required>
+                </div>
+                <div class="form-group">
+                    <label for="scope">Capability (Scope)</label>
+                    <select name="scope" id="scope">
+                        <option value="reader">Reader (Firehose Subscriber)</option>
+                        <option value="writer">Writer (Indicator Producer)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Generate API Key</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2 style="margin-top:0; font-size: 1.25rem;">Active Sponsored Keys</h2>
+            {% if keys %}
+            <div class="key-list">
+                {% for key in keys %}
+                <div class="key-item">
+                    <div class="key-info">
+                        <span class="key-desc">{{ key.description }}</span>
+                        <span class="key-scope">{{ key.scopes[0] }}</span>
+                        <span class="key-hash">Hash: {{ key.id[:12] }}...</span>
+                    </div>
+                    <form action="/v1/keys/revoke" method="post" style="margin:0">
+                        <input type="hidden" name="key_id" value="{{ key.id }}">
+                        <button type="submit" class="btn btn-danger btn-secondary"
+                            style="padding: 0.5rem 1rem; font-size: 0.75rem;">Revoke</button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p style="color: var(--text-secondary); text-align: center; padding: 2rem 0;">No active keys. Generate one
+                above to get started.</p>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="card" style="text-align: center; padding: 4rem 2rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🛡️</div>
+            <h2 style="margin-top:0">Secure Slack Access Only</h2>
+            <p style="color: var(--text-secondary); max-width: 400px; margin: 0 auto 2rem auto;">
+                Please sign in with your Slack account to manage threat intelligence sponsorship for your organization.
+            </p>
+            <a href="/v1/auth/login" class="btn" style="padding: 1rem 3rem;">Enter Gateway</a>
+        </div>
+        {% endif %}
+    </div>
+</body>
+
+</html>

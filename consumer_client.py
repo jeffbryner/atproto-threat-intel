@@ -26,7 +26,7 @@ CONSUMER_API_KEY = os.getenv(
 
 
 async def get_public_key():
-    """Fetches the ISLF Public Key from the gateway."""
+    """Fetches the Public Key from the gateway."""
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(f"{GATEWAY_HTTP_URL}/v1/public-key")
@@ -42,7 +42,7 @@ async def get_public_key():
 
 def verify_signature(public_key_pem, message_json):
     """
-    Verifies the signature of a message using the ISLF Public Key.
+    Verifies the signature of a message using the Public Key.
     """
     if not public_key_pem:
         logger.warning("No public key available. Cannot verify signature.")

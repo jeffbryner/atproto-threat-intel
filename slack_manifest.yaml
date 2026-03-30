@@ -1,0 +1,23 @@
+_metadata: 
+ major_version: 2 
+ minor_version: 1
+display_information:
+  name:  Threat-Intel
+  description: Private threat intelligence network for members.
+  background_color: "#1d1d1d"
+features:
+  bot_user:
+    display_name: Threat-Intel Bot
+    always_online: false
+oauth_config:
+  redirect_urls:
+    - http://localhost:8000/v1/auth/callback
+  scopes:
+    bot:
+      - openid
+      - profile
+      - email
+settings:
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false

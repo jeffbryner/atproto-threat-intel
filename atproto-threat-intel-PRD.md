@@ -2,17 +2,17 @@ This PRD is designed to be fed into a coding assistant (like Gemini-cli or Curso
 
 ---
 
-# PRD: ISLF Decentralized Threat Firehose (POC)
+# PRD: Slack Decentralized Threat Firehose (POC)
 
 ## 1. Executive Summary
-**Project Name:** ISLF Threat-Intel (ATproto Edition)  
-**Objective:** Create a private, serverless threat intelligence network for ISLF members.  
-**Core Value:** Allow CISOs to "sponsor" automated machine readers/writers that share threat indicators (IoCs) in real-time. All data is cryptographically signed by the ISLF Root Key to ensure authenticity while maintaining member anonymity.
+**Project Name:** Slack Community Threat-Intel (ATproto Edition)  
+**Objective:** Create a private, serverless threat intelligence network for members.  
+**Core Value:** Allow CISOs to "sponsor" automated machine readers/writers that share threat indicators (IoCs) in real-time. All data is cryptographically signed by the Root Key to ensure authenticity while maintaining member anonymity.
 
 ---
 
 ## 2. Personas & User Stories
-* **The Sponsor (CISO):** An ISLF member who uses Slack to manage the "Machine Keys" for their company.
+* **The Sponsor (CISO):** A member who uses Slack to manage the "Machine Keys" for their company.
 * **The Machine (Reader/Writer):** A security tool (SIEM/EDR/etc) that uses an API Key to either push or pull threat data.
 * **The Global Network:** The aggregated, real-time stream of all "Verified" threats.
 
@@ -31,9 +31,9 @@ Python will always use uv for virtual environment management.
 
 ### B. Data Protocol (The Lexicon)
 * **Protocol:** AT Protocol (simplified for POC).
-* **Schema:** `foundation.islf.intel.indicator`
+* **Schema:** `foundation.slack.intel.indicator`
 * **Fields:** `indicator` (string), `type` (ipv4/url/hash), `description` (string), `via` (DID), `createdAt` (ISO8601).
-* **Anonymity:** Every record is published with the fixed DID `did:plc:islf-anonymous-member`.
+* **Anonymity:** Every record is published with the fixed DID `did:plc:slack-anonymous-member`.
 
 ### C. The Serverless Stack (GCP)
 * **API/Websocket:** Cloud Run (Python/FastAPI).
@@ -54,7 +54,7 @@ Python will always use uv for virtual environment management.
 
 ## 5. Success Metrics for POC
 1.  **Verification:** A client can only connect if they provide a valid "Sponsored" API key.
-2.  **Authenticity:** A client can verify the signature of an incoming threat using only the ISLF Public Key.
+2.  **Authenticity:** A client can verify the signature of an incoming threat using only the Public Key.
 3.  **Latency:** Indicators travel from "Writer" to "Reader" in < 500ms.
 4.  **Anonymity:** The public firehose stream contains zero references to the original Slack User or Company.
 
@@ -70,6 +70,3 @@ Use existing project: prj-atproto-threat-intel
 * [ ] Write a `consumer_client.py` script that verifies signatures using `cryptography` library.
 
 ---
-
-### Suggested prompt for your gemini-cli session:
-> "I am building a POC based on the attached PRD. I have a GCP project ready. Can you provide the Python FastAPI code for the `Gateway` service? It needs to handle a WebSocket endpoint that streams from Pub/Sub and a POST endpoint that validates an API key against Firestore and signs a JSON payload using an asymmetric key from Google Cloud KMS."
