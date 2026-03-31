@@ -240,45 +240,49 @@
         <div class="card">
             <h2 style="margin-top:0; font-size: 1.25rem;">Active Sponsored Keys</h2>
             {% if keys %}
-                <div class="key-list">
-                    {% for key in keys %}
-                        <div class="key-item">
-                            <div class="key-info">
-                                <span class="key-desc">{{ key.description }}</span>
-                                <span class="key-scope">{{ key.scopes[0] }}</span>
-                                <span class="key-hash">Hash: {{ key.id[:12] }}...</span>
-                            </div>
-                            <form action="/v1/keys/revoke" method="post" style="margin:0">
-                                <input type="hidden" name="key_id" value="{{ key.id }}">
-                                <button type="submit" class="btn btn-danger btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.75rem;">Revoke</button>
-                            </form>
-                        </div>
-                    {% endfor %}
+            <div class="key-list">
+                {% for key in keys %}
+                <div class="key-item">
+                    <div class="key-info">
+                        <span class="key-desc">{{ key.description }}</span>
+                        <span class="key-scope">{{ key.scopes[0] }}</span>
+                        <span class="key-hash">Hash: {{ key.id[:12] }}...</span>
+                    </div>
+                    <form action="/v1/keys/revoke" method="post" style="margin:0">
+                        <input type="hidden" name="key_id" value="{{ key.id }}">
+                        <button type="submit" class="btn btn-danger btn-secondary"
+                            style="padding: 0.5rem 1rem; font-size: 0.75rem;">Revoke</button>
+                    </form>
                 </div>
+                {% endfor %}
+            </div>
             {% else %}
-                <p style="color: var(--text-secondary); text-align: center; padding: 2rem 0;">No active keys. Generate one above to get started.</p>
+            <p style="color: var(--text-secondary); text-align: center; padding: 2rem 0;">No active keys. Generate one
+                above to get started.</p>
             {% endif %}
         </div>
 
         <div class="card">
             <h2 style="margin-top:0; font-size: 1.25rem;">Global Activity Feed</h2>
             {% if feed %}
-                <div class="key-list">
-                    {% for entry in feed %}
-                        <div class="key-item">
-                            <div class="key-info">
-                                <span class="key-desc">{{ entry.record.indicator }}</span>
-                                <span class="key-hash" style="color: var(--accent); font-weight: 600;">{{ entry.record.type }}</span>
-                                <span class="key-hash">{{ entry.record.createdAt }}</span>
-                            </div>
-                            <div style="font-size: 0.75rem; color: var(--success);">
-                                ✓ Verified ISLF Sig
-                            </div>
-                        </div>
-                    {% endfor %}
+            <div class="key-list">
+                {% for entry in feed %}
+                <div class="key-item">
+                    <div class="key-info">
+                        <span class="key-desc">{{ entry.record.indicator }}</span>
+                        <span class="key-hash" style="color: var(--accent); font-weight: 600;">{{ entry.record.type
+                            }}</span>
+                        <span class="key-hash">{{ entry.record.createdAt }}</span>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--success);">
+                        ✓ Verified Signature
+                    </div>
                 </div>
+                {% endfor %}
+            </div>
             {% else %}
-                <p style="color: var(--text-secondary); text-align: center; padding: 2rem 0;">No indicators in the global feed yet.</p>
+            <p style="color: var(--text-secondary); text-align: center; padding: 2rem 0;">No indicators in the global
+                feed yet.</p>
             {% endif %}
         </div>
         {% else %}

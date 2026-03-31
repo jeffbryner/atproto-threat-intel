@@ -174,6 +174,7 @@ async def submit_indicator(
 @app.get("/v1/indicators")
 async def get_indicators(
     cursor: Optional[str] = None, 
+    since: Optional[str] = None,
     limit: int = 50,
     api_key: str = Security(api_key_header)
 ):
@@ -191,9 +192,10 @@ async def get_indicators(
         query = db.collection(INDICATORS_COLLECTION).order_by("record.createdAt", direction=firestore.Query.DESCENDING).limit(safe_limit)
         
         if cursor:
-            # Note: For simplicity in this POC, we use a string comparison on the createdAt field
-            # In a production app, you might use a more robust cursor mechanism
             query = query.where("record.createdAt", "<", cursor)
+        
+        if since:
+            query = query.where("record.createdAt", ">=", since)
 
         docs = query.stream()
         results = []
