@@ -261,7 +261,32 @@
                 above to get started.</p>
             {% endif %}
         </div>
+
+        <div class="card">
+            <h2 style="margin-top:0; font-size: 1.25rem;">Global Activity Feed</h2>
+            {% if feed %}
+            <div class="key-list">
+                {% for entry in feed %}
+                <div class="key-item">
+                    <div class="key-info">
+                        <span class="key-desc">{{ entry.record.indicator }}</span>
+                        <span class="key-hash" style="color: var(--accent); font-weight: 600;">{{ entry.record.type
+                            }}</span>
+                        <span class="key-hash">{{ entry.record.createdAt }}</span>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--success);">
+                        ✓ Verified Signature
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p style="color: var(--text-secondary); text-align: center; padding: 2rem 0;">No indicators in the global
+                feed yet.</p>
+            {% endif %}
+        </div>
         {% else %}
+
         <div class="card" style="text-align: center; padding: 4rem 2rem;">
             <div style="font-size: 3rem; margin-bottom: 1rem;">🛡️</div>
             <h2 style="margin-top:0">Secure Slack Access Only</h2>
