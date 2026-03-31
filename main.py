@@ -39,6 +39,7 @@ app = FastAPI(title="Threat-Intel Gateway")
 # Configuration (In a real app, use pydantic-settings or env vars)
 PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT", "prj-atproto-threat-intel")
 FIRESTORE_COLLECTION = "sponsored_keys"
+INDICATORS_COLLECTION = "indicators"
 PUBSUB_TOPIC = "threat-intel-firehose"
 # Expected: projects/*/locations/*/keyRings/*/cryptoKeys/*/cryptoKeyVersions/*
 KMS_KEY_NAME = os.getenv("KMS_KEY_NAME")
@@ -148,16 +149,68 @@ async def submit_indicator(
     signed_message = {
         "record": record,
         "signature": signature.hex(),
-        "alg": "EC_SIGN_P256_SHA256",
+        "alg": "EC_SIGN_P256_SHA256"
     }
 
-    # 4. Broadcast to Pub/Sub
+    # 4. Persist to Firestore (Historical Feed)
+    try:
+        # Use a sortable ID (createdAt + short hash of record)
+        doc_id = f"{record['createdAt']}_{hashlib.sha256(payload).hexdigest()[:8]}"
+        db.collection(INDICATORS_COLLECTION).document(doc_id).set(signed_message)
+        logger.info(f"Persisted indicator to Firestore: {doc_id}")
+    except Exception as e:
+        logger.error(f"Failed to persist indicator to Firestore: {e}")
+        # We continue to publish to Pub/Sub even if storage fails for this POC
+
+    # 5. Broadcast to Pub/Sub
     topic_path = publisher.topic_path(PROJECT_ID, PUBSUB_TOPIC)
+
     future = publisher.publish(topic_path, json.dumps(signed_message).encode("utf-8"))
     message_id = future.result()
 
     return {"status": "published", "message_id": message_id}
 
+
+@app.get("/v1/indicators")
+async def get_indicators(
+    cursor: Optional[str] = None, 
+    limit: int = 50,
+    api_key: str = Security(api_key_header)
+):
+    """
+    Fetches historical threat indicators with pagination (reader scope required).
+    """
+    if not await validate_api_key(api_key, required_scope="reader"):
+        raise HTTPException(status_code=403, detail="Invalid or unauthorized API Key")
+
+    # Limit to max 100 per request
+    safe_limit = min(limit, 100)
+
+    try:
+        # Query: Order by record.createdAt descending
+        query = db.collection(INDICATORS_COLLECTION).order_by("record.createdAt", direction=firestore.Query.DESCENDING).limit(safe_limit)
+        
+        if cursor:
+            # Note: For simplicity in this POC, we use a string comparison on the createdAt field
+            # In a production app, you might use a more robust cursor mechanism
+            query = query.where("record.createdAt", "<", cursor)
+
+        docs = query.stream()
+        results = []
+        last_cursor = None
+        
+        for doc in docs:
+            data = doc.to_dict()
+            results.append(data)
+            last_cursor = data["record"]["createdAt"]
+            
+        return {
+            "indicators": results,
+            "cursor": last_cursor
+        }
+    except Exception as e:
+        logger.error(f"Error fetching historical indicators: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch history")
 
 @app.websocket("/v1/firehose")
 async def firehose_stream(websocket: WebSocket):
@@ -208,20 +261,23 @@ async def firehose_stream(websocket: WebSocket):
 async def home(request: Request):
     user = request.session.get("user")
     keys = []
+    feed = []
+    
     if user:
-        # Fetch user's keys from Firestore
-        docs = (
-            db.collection(FIRESTORE_COLLECTION)
-            .where("sponsor_id", "==", user["sub"])
-            .stream()
-        )
-        for doc in docs:
+        # 1. Fetch user's keys from Firestore
+        key_docs = db.collection(FIRESTORE_COLLECTION).where("sponsor_id", "==", user["sub"]).stream()
+        for doc in key_docs:
             d = doc.to_dict()
-            d["id"] = doc.id  # The hash
+            d["id"] = doc.id # The hash
             keys.append(d)
-
+            
+        # 2. Fetch recent global indicators (Last 10)
+        indicator_docs = db.collection(INDICATORS_COLLECTION).order_by("record.createdAt", direction=firestore.Query.DESCENDING).limit(10).stream()
+        for doc in indicator_docs:
+            feed.append(doc.to_dict())
+    
     return templates.TemplateResponse(
-        request=request, name="index.html", context={"user": user, "keys": keys}
+        request=request, name="index.html", context={"user": user, "keys": keys, "feed": feed}
     )
 
 
